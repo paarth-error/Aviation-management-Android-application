@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/design_default_color_background">
+
+    <ImageView
+        android:id="@+id/aircraftBackgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/aircraft_image"
+        android:scaleType="centerCrop"
+        android:alpha="0.7"
+        android:contentDescription="Aircraft Background" />
+    <!-- Top Logo Section -->
+
+    <!-- Dashboard Buttons Container -->
+
+    <LinearLayout
+        android:id="@+id/logoSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="36dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- Logo Image -->
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
+            android:contentDescription="Aviation Management Logo"
+            android:src="@drawable/img_1" />
+
+        <!-- Company Name -->
+        <TextView
+            android:id="@+id/companyName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="sans-serif-condensed"
+            android:letterSpacing="0.1"
+            android:text="AVIATION MANAGEMENT"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/dashboardButtonsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="94dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- Air Hours Button -->
+        <Button
+            android:id="@+id/airHoursButton"
+            android:layout_width="200dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/img_3"
+            android:elevation="6dp"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.2"
+            android:text="Air\nHours"
+            android:textColor="@color/white"
+            android:textSize="24sp" />
+
+        <!-- Linkage Analyze Button -->
+        <Button
+            android:id="@+id/linkageAnalyzeButton"
+            android:layout_width="200dp"
+            android:layout_height="120dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/img_3"
+            android:elevation="6dp"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.2"
+            android:text="Linkage\nAnalyze"
+            android:textColor="@android:color/white"
+            android:textSize="24sp" />
+
+        <!-- Billing Status Button -->
+        <Button
+            android:id="@+id/billingStatusButton"
+            android:layout_width="200dp"
+            android:layout_height="120dp"
+            android:background="@drawable/img_3"
+            android:elevation="6dp"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.2"
+            android:text="Billing\nStatus"
+            android:textColor="@android:color/white"
+            android:textSize="24sp" />
+
+    </LinearLayout>
+
+</RelativeLayout>
