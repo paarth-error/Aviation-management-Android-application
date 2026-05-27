@@ -3,107 +3,185 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_background">
+    android:background="@color/white">
 
+    <!-- Background Image with Overlay -->
     <ImageView
         android:id="@+id/aircraftBackgroundImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/aircraft_image"
         android:scaleType="centerCrop"
-        android:alpha="0.7"
+        android:alpha="0.15"
         android:contentDescription="Aircraft Background" />
-    <!-- Top Logo Section -->
 
-    <!-- Dashboard Buttons Container -->
+    <!-- Gradient Overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="@dimen/material_emphasis_high_type"
+        android:background="@drawable/gradient_overlay" />
 
+    <!-- Logo Section -->
     <LinearLayout
         android:id="@+id/logoSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="60dp"
         android:gravity="center"
         android:orientation="vertical">
 
         <!-- Logo Image -->
         <ImageView
             android:id="@+id/logoImage"
-            android:layout_width="100dp"
-            android:layout_height="70dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:contentDescription="Aviation Management Logo"
-            android:src="@drawable/img_1" />
+            android:src="@drawable/img_1"
+            android:scaleType="centerInside" />
 
         <!-- Company Name -->
         <TextView
             android:id="@+id/companyName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:fontFamily="sans-serif-condensed"
-            android:letterSpacing="0.1"
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif-light"
+            android:letterSpacing="0.15"
             android:text="AVIATION MANAGEMENT"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textColor="#2C3E50"
+            android:textSize="18sp"
+            android:textStyle="normal" />
 
     </LinearLayout>
 
+    <!-- Dashboard Buttons Container -->
     <LinearLayout
         android:id="@+id/dashboardButtonsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
-        android:layout_marginBottom="94dp"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
         android:gravity="center"
         android:orientation="vertical">
 
         <!-- Air Hours Button -->
-        <Button
-            android:id="@+id/airHoursButton"
-            android:layout_width="200dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/img_3"
-            android:elevation="6dp"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
-            android:lineSpacingMultiplier="1.2"
-            android:text="Air\nHours"
-            android:textColor="@color/white"
-            android:textSize="24sp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/airHoursCard"
+            android:layout_width="280dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/button_gradient_blue"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_schedule"
+                    android:tint="@color/white"
+                    android:contentDescription="Air Hours Icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Air Hours"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Linkage Analyze Button -->
-        <Button
-            android:id="@+id/linkageAnalyzeButton"
-            android:layout_width="200dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/img_3"
-            android:elevation="6dp"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
-            android:lineSpacingMultiplier="1.2"
-            android:text="Linkage\nAnalyze"
-            android:textColor="@android:color/white"
-            android:textSize="24sp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/linkageAnalyzeCard"
+            android:layout_width="280dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/button_gradient_purple"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_analytics"
+                    android:tint="@color/white"
+                    android:contentDescription="Linkage Analyze Icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Linkage Analyze"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Billing Status Button -->
-        <Button
-            android:id="@+id/billingStatusButton"
-            android:layout_width="200dp"
-            android:layout_height="120dp"
-            android:background="@drawable/img_3"
-            android:elevation="6dp"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
-            android:lineSpacingMultiplier="1.2"
-            android:text="Billing\nStatus"
-            android:textColor="@android:color/white"
-            android:textSize="24sp" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/billingStatusCard"
+            android:layout_width="280dp"
+            android:layout_height="100dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/button_gradient_green"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_receipt"
+                    android:tint="@color/white"
+                    android:contentDescription="Billing Status Icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Billing Status"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 

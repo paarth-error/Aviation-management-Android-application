@@ -2,4 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="primary_color">#2196F3</color>
+    <color name="primary_dark">#1976D2</color>
+    <color name="accent_color">#FF4081</color>
+
+
+    <color name="background_light">#F5F5F5</color>
 </resources>
+
+    <!-- Create res/drawable/rounded_background.xml -->
+
+
+    <!-- Create res/drawable/button_primary.xml -->

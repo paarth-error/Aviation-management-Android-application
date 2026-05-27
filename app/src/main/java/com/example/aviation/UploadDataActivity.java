@@ -1,55 +1,129 @@
 package com.example.aviation;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class UploadDataActivity extends AppCompatActivity {
+    private static final String TAG = "UploadDataActivity";
 
     private Button uploadButton;
+    private ProgressBar progressBar;
     private static final int FILE_PICKER_REQUEST_CODE = 1001;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 1002;
+
+    // --- SharedPreferences Constants ---
+    private static final String PREFS_FILE_NAME = "app_prefs";
+    private static final String LAST_UPLOADED_CSV_PATH_KEY = "last_uploaded_csv_path";
+
+    // Executor for background tasks
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload);
 
-        // Initialize the Upload button
-        uploadButton = findViewById(R.id.uploadButton);
+        try {
+            setContentView(R.layout.activity_upload);
+            Log.d(TAG, "Layout set successfully");
 
-        // Set click listener for the Upload button
-        uploadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Check for storage permission
-                if (checkStoragePermission()) {
-                    openFilePicker();
-                } else {
-                    requestStoragePermission();
-                }
+            // Initialize the Upload button
+            uploadButton = findViewById(R.id.uploadButton);
+            if (uploadButton == null) {
+                Log.e(TAG, "uploadButton not found in layout!");
+                Toast.makeText(this, "Upload button not found", Toast.LENGTH_LONG).show();
+                return;
             }
-        });
+
+            // Initialize progress bar - make it optional in case it doesn't exist
+
+
+            // Initialize Chaquopy
+            initializePython();
+
+            // Set click listener for the Upload button
+            uploadButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Upload button clicked");
+                    try {
+                        // Check for storage permission
+                        if (checkStoragePermission()) {
+                            openFilePicker();
+                        } else {
+                            requestStoragePermission();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error in upload button click: " + e.getMessage());
+                        e.printStackTrace();
+                        Toast.makeText(UploadDataActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCreate: " + e.getMessage());
+            e.printStackTrace();
+            Toast.makeText(this, "Error initializing upload screen: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void initializePython() {
+        try {
+            if (!Python.isStarted()) {
+                Python.start(new AndroidPlatform(this));
+                Log.d(TAG, "Python initialized successfully");
+            } else {
+                Log.d(TAG, "Python already initialized");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing Python: " + e.getMessage());
+            e.printStackTrace();
+            Toast.makeText(this, "Error initializing Python: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private boolean checkStoragePermission() {
         // For Android 13+ (API 33+), we don't need READ_EXTERNAL_STORAGE for file picker
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            return true; // File picker works without explicit storage permission on Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return true;
         }
         // For Android 11+ (API 30+), check if we have permission or if scoped storage is being used
-        else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            return true; // Scoped storage allows file picker without explicit permission
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return true;
         }
         // For older Android versions, check READ_EXTERNAL_STORAGE permission
         else {
@@ -60,7 +134,7 @@ public class UploadDataActivity extends AppCompatActivity {
 
     private void requestStoragePermission() {
         // Only request permission for older Android versions
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 // Show explanation dialog
@@ -77,16 +151,16 @@ public class UploadDataActivity extends AppCompatActivity {
     }
 
     private void showPermissionExplanationDialog() {
-        new androidx.appcompat.app.AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Storage Permission Required")
                 .setMessage("This app needs storage permission to access and upload your CSV/Excel files.")
                 .setPositiveButton("Grant Permission", (dialog, which) -> {
-                    ActivityCompat.requestPermissions(this,
+                    ActivityCompat.requestPermissions(UploadDataActivity.this,
                             new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                             STORAGE_PERMISSION_REQUEST_CODE);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> {
-                    Toast.makeText(this, "Permission denied. Cannot access files.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UploadDataActivity.this, "Permission denied. Cannot access files.", Toast.LENGTH_SHORT).show();
                 })
                 .show();
     }
@@ -106,21 +180,17 @@ public class UploadDataActivity extends AppCompatActivity {
             };
             intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-            // Add these flags for better compatibility
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
 
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(Intent.createChooser(intent, "Select CSV or Excel file"),
                         FILE_PICKER_REQUEST_CODE);
             } else {
-                // Fallback to document picker
                 openDocumentPicker();
             }
         } catch (Exception ex) {
+            Log.e(TAG, "Error opening file picker: " + ex.getMessage());
             Toast.makeText(this, "Error opening file picker: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
-            // Try alternative method
             openDocumentPicker();
         }
     }
@@ -139,7 +209,8 @@ public class UploadDataActivity extends AppCompatActivity {
 
             startActivityForResult(intent, FILE_PICKER_REQUEST_CODE);
         } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this, "Please install a file manager app", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "No file manager app found: " + ex.getMessage());
+            Toast.makeText(this, "Please install a file manager app capable of opening documents.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -162,11 +233,10 @@ public class UploadDataActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == FILE_PICKER_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == FILE_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
                 Uri selectedFileUri = data.getData();
                 if (selectedFileUri != null) {
-                    // Handle the selected file
                     handleSelectedFile(selectedFileUri);
                 }
             }
@@ -174,90 +244,215 @@ public class UploadDataActivity extends AppCompatActivity {
     }
 
     private void handleSelectedFile(Uri fileUri) {
-        // Get the file name
         String fileName = getFileName(fileUri);
-
-        // Show success message
         Toast.makeText(this, "File selected: " + fileName, Toast.LENGTH_LONG).show();
 
-        // Process the uploaded file and navigate to dashboard
+        // Show progress bar and disable button
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        uploadButton.setEnabled(false);
+
         processUploadedFile(fileUri, fileName);
     }
 
     private String getFileName(Uri uri) {
         String fileName = "Unknown";
-        if (uri.getScheme().equals("content")) {
-            android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-            try {
+        if (uri.getScheme() != null && uri.getScheme().equals("content")) {
+            try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
-                    int nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     if (nameIndex >= 0) {
                         fileName = cursor.getString(nameIndex);
                     }
                 }
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
             }
+        } else if (uri.getScheme() != null && uri.getScheme().equals("file")) {
+            fileName = new File(uri.getPath() != null ? uri.getPath() : "Unknown").getName();
         }
         return fileName;
     }
 
-    private void processUploadedFile(Uri fileUri, String fileName) {
-        // Show uploading message
-        Toast.makeText(this, "Processing " + fileName + "...", Toast.LENGTH_SHORT).show();
+    private void processUploadedFile(Uri fileUri, String originalFileName) {
+        Toast.makeText(this, "Processing " + originalFileName + "...", Toast.LENGTH_SHORT).show();
 
-        // Simulate file processing with a delay (replace with actual processing)
-        new Handler().postDelayed(new Runnable() {
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
-                // TODO: Implement your actual file processing logic here
-                // This is where you would:
-                // 1. Read the CSV/Excel file
-                // 2. Parse the data
-                // 3. Validate the data
-                // 4. Send it to your server or process it locally
+                try {
+                    // Determine file extension from the original file name
+                    String fileExtension = "";
+                    int dotIndex = originalFileName.lastIndexOf('.');
+                    if (dotIndex > 0 && dotIndex < originalFileName.length() - 1) {
+                        fileExtension = originalFileName.substring(dotIndex).toLowerCase();
+                    }
 
-                // For now, simulate successful processing
-                onFileProcessingComplete(true, fileName);
+                    // Save to app's internal files directory with its original extension
+                    final String targetFileName = "uploaded_data" + fileExtension;
+                    final File outputFile = new File(getFilesDir(), targetFileName);
+
+                    try (InputStream inputStream = getContentResolver().openInputStream(fileUri);
+                         FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+                        if (inputStream != null) {
+                            byte[] buffer = new byte[1024];
+                            int read;
+                            while ((read = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, read);
+                            }
+                        } else {
+                            throw new IOException("Could not open input stream from URI.");
+                        }
+                    }
+
+                    final String savedPath = outputFile.getAbsolutePath();
+                    saveLastUploadedCsvPath(savedPath);
+
+                    // Call Python script for air hours calculation
+                    Python py = Python.getInstance();
+                    PyObject airHoursModule = py.getModule("flight_calculator");
+                    Log.d(TAG, "Calling Python function process_flight_hours with path: " + savedPath);
+                    PyObject pyResult = airHoursModule.callAttr("process_flight_hours", savedPath);
+
+                    final String airHoursResultJson = pyResult.toString();
+                    Log.d(TAG, "Python air hours result JSON: " + airHoursResultJson);
+
+                    // Call Python script for billing status calculation from separate module
+                    // Replace "your_billing_module" with the actual name of your Python file
+                    PyObject billingModule = py.getModule("billing_status");
+                    Log.d(TAG, "Calling Python function process_billing_status with path: " + savedPath);
+                    PyObject billingResult = billingModule.callAttr("process_billing_status_from_csv", savedPath);
+                    final String billingResultJson = billingResult.toString();
+                    Log.d(TAG, "Python billing result JSON: " + billingResultJson);
+
+                    // Save both results to SharedPreferences
+                    SharedPreferences sharedPrefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPrefs.edit();
+                    editor.putString("last_air_hours_json", airHoursResultJson);
+                    editor.putString("last_billing_json", billingResultJson);
+                    editor.putString("last_uploaded_file_name", originalFileName);
+                    editor.putString("last_uploaded_file_path", savedPath);
+                    editor.putLong("last_upload_timestamp", System.currentTimeMillis());
+                    editor.apply();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (airHoursResultJson == null || airHoursResultJson.trim().isEmpty()) {
+                                Log.e(TAG, "airHoursResultJson is null or empty!");
+                                onFileProcessingComplete(false, originalFileName, "No result from Python script.");
+                            } else {
+                                handlePythonResult(airHoursResultJson, originalFileName);
+                            }
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Error during file processing: " + e.getMessage());
+                    final String errorMessage = e.getMessage();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            onFileProcessingComplete(false, originalFileName, "Error: " + errorMessage);
+                        }
+                    });
+                }
             }
-        }, 2000); // 2 second delay to simulate processing
+        });
     }
 
-    private void onFileProcessingComplete(boolean success, String fileName) {
-        if (success) {
-            // Show success message
-            Toast.makeText(this, "✅ " + fileName + " uploaded successfully!",
-                    Toast.LENGTH_LONG).show();
+    private void handlePythonResult(String jsonResult, String originalFileName) {
+        try {
+            if (jsonResult.trim().startsWith("{")) {
+                JSONObject jsonObject = new JSONObject(jsonResult);
+                if (jsonObject.has("error")) {
+                    String errorMessage = jsonObject.getString("error");
+                    onFileProcessingComplete(false, originalFileName, errorMessage);
+                } else if (jsonObject.has("message")) {
+                    String message = jsonObject.getString("message");
+                    onFileProcessingComplete(true, originalFileName, message);
+                }
+            } else if (jsonResult.trim().startsWith("[")) {
+                JSONArray resultsArray = new JSONArray(jsonResult);
+                if (resultsArray.length() > 0) {
+                    StringBuilder airHoursSummary = new StringBuilder();
+                    airHoursSummary.append("Flight Air Hours Summary:\n\n");
 
-            // Navigate to dashboard after successful upload
-            navigateToDashboard();
+                    for (int i = 0; i < resultsArray.length(); i++) {
+                        JSONObject flightData = resultsArray.getJSONObject(i);
+                        String flightDate = flightData.getString("Flight Date");
+                        String regNo = flightData.getString("Reg No.");
+                        double airHours = flightData.getDouble("Air Hours");
+                        String status = flightData.getString("Status");
+
+                        airHoursSummary.append("Date: ").append(flightDate).append("\n");
+                        airHoursSummary.append("Reg No.: ").append(regNo).append("\n");
+                        airHoursSummary.append("Air Hours: ").append(String.format("%.2f", airHours)).append(" hours\n");
+                        airHoursSummary.append("Status: ").append(status).append("\n\n");
+                    }
+                    onFileProcessingComplete(true, originalFileName, airHoursSummary.toString());
+                } else {
+                    onFileProcessingComplete(true, originalFileName, "No flight data found or processed.");
+                }
+            } else {
+                onFileProcessingComplete(false, originalFileName, "Unknown result format from Python.");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Error parsing Python JSON result: " + e.getMessage());
+            onFileProcessingComplete(false, originalFileName, "Error parsing analysis results: " + e.getMessage());
+        }
+    }
+
+    private void onFileProcessingComplete(boolean success, String fileName, String message) {
+        // Hide progress bar and re-enable button
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
+        uploadButton.setEnabled(true);
+
+        if (success) {
+            Toast.makeText(this, "✅ " + fileName + " processed successfully!", Toast.LENGTH_LONG).show();
+
+            // Show success dialog and navigate to dashboard
+            new AlertDialog.Builder(this)
+                    .setTitle("Upload Successful")
+                    .setMessage("File processed successfully! You can now view the results from the Dashboard.")
+                    .setPositiveButton("Go to Dashboard", (dialog, which) -> {
+                        navigateToDashboard();
+                    })
+                    .setNegativeButton("Stay Here", (dialog, which) -> {
+                        // Just dismiss the dialog
+                    })
+                    .show();
         } else {
-            // Show error message
-            Toast.makeText(this, "❌ Failed to upload " + fileName + ". Please try again.",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "❌ Failed to process " + fileName + ". " + message, Toast.LENGTH_LONG).show();
         }
     }
 
     private void navigateToDashboard() {
-        // Add a small delay to let the user see the success message
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(UploadDataActivity.this, DashboardActivity.class);
-
-                // Optional: Pass data to dashboard if needed
-                intent.putExtra("upload_success", true);
-                intent.putExtra("timestamp", System.currentTimeMillis());
-
-                startActivity(intent);
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-
-                // Finish current activity so user can't go back to upload screen
-                finish();
-            }
-        }, 1500); // 1.5 second delay to show success message
+        try {
+            Intent intent = new Intent(this, DashboardActivity.class);
+            intent.putExtra("upload_success", true);
+            intent.putExtra("show_success_message", true);
+            startActivity(intent);
+            Log.d(TAG, "Navigation to Dashboard successful!");
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation to Dashboard failed: " + e.getMessage());
+            Toast.makeText(this, "Error navigating to Dashboard", Toast.LENGTH_SHORT).show();
+        }
     }
 
+    private void saveLastUploadedCsvPath(String path) {
+        SharedPreferences sharedPrefs = getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putString(LAST_UPLOADED_CSV_PATH_KEY, path);
+        editor.apply();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
+    }
 }

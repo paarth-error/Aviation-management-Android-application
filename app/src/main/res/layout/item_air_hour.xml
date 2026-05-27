@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/white">
+
+    <!-- Flight Date -->
+    <TextView
+        android:id="@+id/textFlightDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2025-07-15"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp"
+        android:textStyle="bold" />
+
+    <!-- Main row: RegNo, Hours, Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/textRegNo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="VT-XXX"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/textAirHours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="60dp"
+            android:text="0.0 hrs"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:padding="8dp"
+            android:gravity="center"
+            android:textColor="@android:color/holo_red_dark" />
+
+        <TextView
+            android:id="@+id/textStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status"
+            android:layout_marginStart="8dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp" />
+    </LinearLayout>
+</LinearLayout>
